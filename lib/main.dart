@@ -3,7 +3,6 @@ import 'screens/onboard_screen.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 
-
 void main() => runApp(const CarbonTrackerApp());
 
 class CarbonTrackerApp extends StatelessWidget {

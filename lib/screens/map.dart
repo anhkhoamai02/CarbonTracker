@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'home_page.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({
@@ -84,12 +85,12 @@ class _TrackingMapScreenState extends State<MapScreen> {
 
     _positionStream =
         Geolocator.getPositionStream(locationSettings: settings).listen(
-              (pos) {
-            final goodEnough = pos.accuracy <= 40;
-            _applyPosition(pos, recenter: _lockedToUser && goodEnough);
-          },
-          onError: (e) => debugPrint('[Location] stream error: $e'),
-        );
+      (pos) {
+        final goodEnough = pos.accuracy <= 40;
+        _applyPosition(pos, recenter: _lockedToUser && goodEnough);
+      },
+      onError: (e) => debugPrint('[Location] stream error: $e'),
+    );
   }
 
   Future<void> _applyPosition(Position pos,
@@ -117,7 +118,7 @@ class _TrackingMapScreenState extends State<MapScreen> {
           markerId: const MarkerId('me'),
           position: ll,
           icon:
-          BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
           infoWindow: InfoWindow(
             title: _vehicle ?? 'Moving',
             snippet: '±${pos.accuracy.toStringAsFixed(0)} m',
@@ -180,7 +181,9 @@ class _TrackingMapScreenState extends State<MapScreen> {
       barrierDismissible: false,
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        child: SingleChildScrollView( // ✅ thêm dòng này
+          physics: const BouncingScrollPhysics(),
         child: Padding(
           padding: const EdgeInsets.all(18.0),
           child: Column(
@@ -208,7 +211,7 @@ class _TrackingMapScreenState extends State<MapScreen> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -244,7 +247,7 @@ class _TrackingMapScreenState extends State<MapScreen> {
               const SizedBox(height: 18),
               Container(
                 padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: Colors.grey.shade300),
@@ -256,7 +259,9 @@ class _TrackingMapScreenState extends State<MapScreen> {
                       children: [
                         Icon(Icons.eco, color: Colors.green),
                         SizedBox(width: 8),
-                        Text('CO₂ Emitted'),
+                        Text(
+                            'CO₂ Emitted',
+                        style: TextStyle(color: Colors.black),),
                       ],
                     ),
                     Text(
@@ -298,8 +303,10 @@ class _TrackingMapScreenState extends State<MapScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 12,
+                runSpacing: 8,
                 children: [
                   OutlinedButton(
                     onPressed: () => Navigator.pop(context),
@@ -327,6 +334,7 @@ class _TrackingMapScreenState extends State<MapScreen> {
           ),
         ),
       ),
+      ),
     );
   }
 
@@ -341,79 +349,79 @@ class _TrackingMapScreenState extends State<MapScreen> {
       body: _currentLatLng == null
           ? const Center(child: CircularProgressIndicator())
           : Stack(
-        children: [
-          GoogleMap(
-            mapType: MapType.normal,
-            initialCameraPosition: startCamera,
-            myLocationEnabled: true,
-            myLocationButtonEnabled: false,
-            compassEnabled: true,
-            zoomControlsEnabled: false,
-            polylines: _polylines,
-            markers: _markers,
-            onMapCreated: (c) => _mapController = c,
-            onCameraMoveStarted: () => _lockedToUser = false,
-          ),
-          Positioned(
-            top: 60,
-            left: 16,
-            right: 16,
-            child: _TrackingInfoCard(
-              vehicle: _vehicle,
-              timeText: _formattedTime(),
-              distanceKm: _totalKm,
-            ),
-          ),
-          if (_vehicle == null)
-            Positioned(
-              bottom: 100,
-              left: 16,
-              right: 16,
-              child: _VehiclePicker(
-                onSelected: (v) => setState(() => _vehicle = v),
-              ),
-            ),
-          Positioned(
-            bottom: 30,
-            left: 20,
-            right: 20,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                _positionStream?.cancel();
-                _showTripCompletedDialog(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+              children: [
+                GoogleMap(
+                  mapType: MapType.normal,
+                  initialCameraPosition: startCamera,
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: false,
+                  compassEnabled: true,
+                  zoomControlsEnabled: false,
+                  polylines: _polylines,
+                  markers: _markers,
+                  onMapCreated: (c) => _mapController = c,
+                  onCameraMoveStarted: () => _lockedToUser = false,
                 ),
-              ),
-              icon: const Icon(Icons.stop, color: Colors.white),
-              label: const Text(
-                'Stop Trip',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                Positioned(
+                  top: 60,
+                  left: 16,
+                  right: 16,
+                  child: _TrackingInfoCard(
+                    vehicle: _vehicle,
+                    timeText: _formattedTime(),
+                    distanceKm: _totalKm,
+                  ),
                 ),
-              ),
+                if (_vehicle == null)
+                  Positioned(
+                    bottom: 100,
+                    left: 16,
+                    right: 16,
+                    child: _VehiclePicker(
+                      onSelected: (v) => setState(() => _vehicle = v),
+                    ),
+                  ),
+                Positioned(
+                  bottom: 30,
+                  left: 20,
+                  right: 20,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      _positionStream?.cancel();
+                      _showTripCompletedDialog(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: const Icon(Icons.stop, color: Colors.white),
+                    label: const Text(
+                      'Stop Trip',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 16,
+                  bottom: 100,
+                  child: FloatingActionButton(
+                    mini: true,
+                    backgroundColor: Colors.white,
+                    shape: const CircleBorder(),
+                    onPressed: _recenterNow,
+                    child:
+                        const Icon(Icons.my_location, color: Color(0xFF4CAF50)),
+                  ),
+                ),
+              ],
             ),
-          ),
-          Positioned(
-            left: 16,
-            bottom: 100,
-            child: FloatingActionButton(
-              mini: true,
-              backgroundColor: Colors.white,
-              shape: const CircleBorder(),
-              onPressed: _recenterNow,
-              child: const Icon(Icons.my_location,
-                  color: Color(0xFF4CAF50)),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -452,8 +460,7 @@ class _TrackingInfoCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.green.shade100,
                   borderRadius: BorderRadius.circular(8),
@@ -548,14 +555,13 @@ class _TripInfoBox extends StatelessWidget {
         children: [
           Icon(icon, color: Colors.black54),
           const SizedBox(height: 6),
-          Text(label, style: const TextStyle(fontSize: 14)),
+          Text(label,
+              style: const TextStyle(fontSize: 14, color: Colors.black)),
           const SizedBox(height: 4),
           Text(
             value,
             style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
+                fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black),
           ),
         ],
       ),
@@ -565,6 +571,7 @@ class _TripInfoBox extends StatelessWidget {
 
 class _VehiclePicker extends StatefulWidget {
   const _VehiclePicker({required this.onSelected});
+
   final ValueChanged<String> onSelected;
 
   @override
